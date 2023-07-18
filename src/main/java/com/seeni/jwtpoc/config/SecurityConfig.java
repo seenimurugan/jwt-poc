@@ -113,7 +113,7 @@ public class SecurityConfig {
     @SneakyThrows
     @Bean
     JwtEncoder jwtEncoder() {
-        var jwkSet = JWKSet.load(jwtSigningKey.jwk().getFile());
+        var jwkSet = JWKSet.load(jwtSigningKey.rsaKeyPair().getFile());
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwkSet.getKeyByKeyId(KID)));
         return new NimbusJwtEncoder(jwks);
     }

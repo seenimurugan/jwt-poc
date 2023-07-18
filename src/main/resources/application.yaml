@@ -20,11 +20,12 @@ jwt:
     - /jwt/redirectsecureendpoint
   cors-allowed-origins:
     - http://127.0.0.1
+    - http://localhost:8081
 
 
 rsa:
   jwk-set: classpath:certs/jwk-set.json
-  jwk: classpath:certs/jwk.json
+  rsa-key-pair: classpath:certs/rsa-key-pair.json
 logging:
   level:
     org.springframework.web: trace

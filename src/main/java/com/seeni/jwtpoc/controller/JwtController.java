@@ -30,7 +30,7 @@ public class JwtController {
 
     public static final String KEYS = "keys";
     public static final String JWKS = "jwks";
-    public static final String JWK = "jwk";
+    public static final String KEY_PAIR_IN_JWK_FORMAT = "rsaKeyPair";
     private final TokenService tokenService;
     private final JWKSet jwkSet;
     private final RSAKey customRsaKey;
@@ -86,9 +86,9 @@ public class JwtController {
     @GetMapping("/keys")
     public Map<String, Object> jwk() {
         var jwks = Map.of(KEYS, List.of(customRsaKey.toPublicJWK().toJSONObject()));
-        var jwk = Map.of(KEYS, List.of(customRsaKey.toJSONObject()));
+        var rsaKeyPair = Map.of(KEYS, List.of(customRsaKey.toJSONObject()));
         return Map.of(
                 JWKS, jwks,
-                JWK, jwk);
+                KEY_PAIR_IN_JWK_FORMAT, rsaKeyPair);
     }
 }
