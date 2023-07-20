@@ -77,11 +77,6 @@ public class JwtController {
         return token;
     }
 
-    @GetMapping("/.well-known/jwks.json")
-    public Map<String, Object> keys() {
-        return this.jwkSet.toJSONObject();
-    }
-
     @SneakyThrows
     @GetMapping("/keys")
     public Map<String, Object> jwk() {

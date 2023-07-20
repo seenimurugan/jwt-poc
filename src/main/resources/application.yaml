@@ -6,10 +6,11 @@ spring:
 #          issuer-uri: https://login.microsoftonline.com/804a70cf-4a61-4a08-908e-a32b2cff8131/v2.0 - if this uri available to fetch the certificate and is same as iss in the jwt then jwk-set-uri is not needed.
 #          jwk-set-uri: https://idp.example.com/.well-known/jwks.json -- only use this if the iss in the jwt can not be used to fetch the certificate.
           audiences: [5436e3e3-0866-4ac1-b0c0-85c6ec8b863f]
-          jwk-set-uri: http://localhost:8080/jwt/.well-known/jwks.json
+          issuer-uri: http://localhost:8080/jwks/v1.0
 
 jwt:
   allowed-cw1-instances: [5436e3e3-0866-4ac1-b0c0-85c6ec8b863b]
+  openid-configuration: classpath:config/openid-configuration.json
   roles: [
     "1:VWtnNWFyVzEvaHNqMXBQTmwwYXNtdkVCUExsYlVkeU5TWHl0TW1raEVzOTROTnRhdkYzL3h5T3NTUjlidkhYa3NaQ3h2VURjOUNDVU4zTlJ6SUhCSE1RRG5mVHp4bGt6a3lGeXVWMVhQMkdRazdSeWg3NjhVNkxRTXgvWnhEUzNacEtSQVN1UEpFME1XUVpzb3h1UVFsaHhpVkh0Y1dGdXhQZVp0d1B4MHFNVFVRaU8xVF",
     "2:RFdz09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",

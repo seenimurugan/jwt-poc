@@ -4,6 +4,7 @@ import com.seeni.jwtpoc.config.JwtConfigProperties;
 import com.seeni.jwtpoc.model.request.TokenInfo;
 import com.seeni.jwtpoc.model.request.Wc1UserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -22,10 +23,16 @@ public class TokenService {
     private final JwtEncoder encoder;
     private final JwtConfigProperties jwtConfigProperties;
 
+    public static final String ISSUER = "issuer";
+
+    @SneakyThrows
     public String generateToken(TokenInfo tokenInfo) {
         Instant now = Instant.now();
+        var config = jwtConfigProperties.openidConfiguration();
+        var issuer = (String) config.get(ISSUER);
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
+                .issuer(issuer)
                 .audience(List.of("5436e3e3-0866-4ac1-b0c0-85c6ec8b863f"))
                 .issuedAt(now)
                 .notBefore(now)
@@ -41,10 +48,15 @@ public class TokenService {
         return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
+    @SneakyThrows
     public String generateWc1UserDetailsToken(Wc1UserDetails wc1UserDetails) {
+
+        var config = jwtConfigProperties.openidConfiguration();
+        var issuer = (String) config.get(ISSUER);
+
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
+                .issuer(issuer)
                 .issuedAt(now)
                 .notBefore(now)
                 .expiresAt(now.plus(15, ChronoUnit.HOURS))

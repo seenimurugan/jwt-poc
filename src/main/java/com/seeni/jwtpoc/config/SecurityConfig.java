@@ -91,13 +91,14 @@ public class SecurityConfig {
     SecurityFilterChain jwtAuthenticationFilterChain(HttpSecurity http) throws Exception {
 
         http.requestMatchers()
-                .antMatchers("/jwt/**")
+                .antMatchers("/jwt/**", "/jwks/**")
                 .and()
                 .authorizeRequests()
                 .antMatchers(POST, "/jwt/token").permitAll()
                 .antMatchers(POST, "/jwt/bodytoken").permitAll()
                 .antMatchers(GET, "/jwt/keys").permitAll()
-                .antMatchers(GET, "/jwt/.well-known/jwks.json").permitAll()
+                .antMatchers(GET, "/jwks/v1.0/.well-known/jwks.json").permitAll()
+                .antMatchers(GET, "/jwks/v1.0/.well-known/openid-configuration").permitAll()
                 .anyRequest().authenticated().and()
                 .csrf().disable()
                 .cors().and() // without this configured corsConfigurationSource bean won't work

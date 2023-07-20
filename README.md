@@ -27,7 +27,7 @@
    "eblDocumentId": "123",
    "rid": "seenimurugan",
    "language": "EN",
-   "code": "S15",
+   "userCode": "S15",
    "companyCode": "BOLERO",
    "timeZone": "UK",
    "signature": "seeni",
