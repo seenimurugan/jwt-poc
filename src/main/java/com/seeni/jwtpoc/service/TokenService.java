@@ -48,13 +48,13 @@ public class TokenService {
                 .issuedAt(now)
                 .notBefore(now)
                 .expiresAt(now.plus(15, ChronoUnit.HOURS))
-                .subject(wc1UserDetails.code())
+                .subject(wc1UserDetails.userCode())
                 .claims(stringObjectMap -> {
                     var customClaims = Map.of(
                             EBL_DOCUMENT_ID, wc1UserDetails.eblDocumentId(),
                             RID, wc1UserDetails.rid(),
                             LANGUAGE, wc1UserDetails.language(),
-                            CODE, wc1UserDetails.code(),
+                            USER_CODE, wc1UserDetails.userCode(),
                             COMPANY_CODE, wc1UserDetails.companyCode(),
                             TIME_ZONE, wc1UserDetails.timeZone(),
                             SIGNATURE, wc1UserDetails.signature(),

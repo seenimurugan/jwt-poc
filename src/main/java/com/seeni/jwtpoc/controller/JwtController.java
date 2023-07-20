@@ -45,7 +45,7 @@ public class JwtController {
     public String secureEndpoint(Authentication authentication) {
         var wc1UserDetails = (Wc1UserDetails) authentication.getPrincipal();
         log.info("Wc1 User Details[{}]", wc1UserDetails);
-        return "Hello ".concat(wc1UserDetails.code()).concat(" ").concat(wc1UserDetails.companyCode()).concat(" from JWT Controller");
+        return "Hello ".concat(wc1UserDetails.userCode()).concat(" ").concat(wc1UserDetails.companyCode()).concat(" from JWT Controller");
     }
 
     @PostMapping("/redirectsecureendpoint")
@@ -71,7 +71,7 @@ public class JwtController {
 
     @PostMapping(path = "/bodytoken")
     public String bodyToken(@RequestBody Wc1UserDetails wc1UserDetails) {
-        log.info("Token requested for user: [{}]", wc1UserDetails.code());
+        log.info("Token requested for user: [{}]", wc1UserDetails.userCode());
         String token = tokenService.generateWc1UserDetailsToken(wc1UserDetails);
         log.info("Token granted: {}", token);
         return token;

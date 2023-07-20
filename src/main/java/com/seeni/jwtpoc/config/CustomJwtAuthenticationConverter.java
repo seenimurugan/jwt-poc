@@ -30,7 +30,7 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
     public static final String EBL_DOCUMENT_ID = "eblDocumentId";
     public static final String RID = "rid";
     public static final String LANGUAGE = "language";
-    public static final String CODE = "code";
+    public static final String USER_CODE = "userCode";
     public static final String COMPANY_CODE = "companyCode";
     public static final String TIME_ZONE = "timeZone";
     public static final String SIGNATURE = "signature";
@@ -104,7 +104,7 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
         return new Wc1UserDetails(claimAsString(claims.get(EBL_DOCUMENT_ID)),
                 claimAsString(claims.get(RID)),
                 claimAsString(claims.get(LANGUAGE)),
-                claimAsString(claims.get(CODE)),
+                claimAsString(claims.get(USER_CODE)),
                 claimAsString(claims.get(COMPANY_CODE)),
                 claimAsString(claims.get(TIME_ZONE)),
                 claimAsString(claims.get(SIGNATURE)),
