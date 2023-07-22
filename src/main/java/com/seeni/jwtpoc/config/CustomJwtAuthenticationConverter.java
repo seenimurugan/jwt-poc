@@ -1,6 +1,7 @@
 package com.seeni.jwtpoc.config;
 
 import com.nimbusds.jose.JOSEException;
+import com.seeni.jwtpoc.config.validator.CW1InstanceValidator;
 import com.seeni.jwtpoc.model.request.Wc1UserDetails;
 import com.seeni.jwtpoc.service.XmlRSAKeyParser;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -18,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.seeni.jwtpoc.config.RequestBodyReadFilter.DATA_TOKEN;
+import static com.seeni.jwtpoc.config.validator.CW1InstanceValidator.ERROR_MSG_PREFIX;
 import static com.seeni.jwtpoc.service.XmlRSAKeyParser.b64decode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST;
@@ -37,19 +40,26 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
     public static final String ACTION = "action";
     private final Map<String, JwtDecoder> jwtDecoderStore = new HashMap<>();
     private final XmlRSAKeyParser xmlRSAKeyParser;
+    private final CW1InstanceValidator cw1InstanceValidator;
 
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        var claims = jwt.getClaims();
-        var roles = getRolesFromClaims(claims);
-        var xmlPublicKey = getXmlPublicKeyFromRoles(roles);
-        log.info("xml public key [{}]", new String(b64decode(xmlPublicKey), UTF_8));
-        var jwtDecoder = getJwtDecoder(xmlPublicKey);
-        var requestBody = getRequestBody();
-        var decodedJwt = requestBody.map(jwtDecoder::decode);
-        decodedJwt.ifPresent(jwt1 -> log.info("Body JWT validation successful!!!"));
-        var wc1UserDetails = getUserDetailsFromJWT(decodedJwt);
-        log.info("UserDetails extracted from JWT [{}]", wc1UserDetails);
-        return new UsernamePasswordAuthenticationToken(wc1UserDetails, decodedJwt.orElse(null), null);
+        cw1InstanceValidator.validate(jwt);
+        try {
+            var claims = jwt.getClaims();
+            var roles = getRolesFromClaims(claims);
+            var xmlPublicKey = getXmlPublicKeyFromRoles(roles);
+            log.info("xml public key [{}]", new String(b64decode(xmlPublicKey), UTF_8));
+            var jwtDecoder = getJwtDecoder(xmlPublicKey);
+            var requestBody = getRequestBody();
+            var decodedJwt = requestBody.map(jwtDecoder::decode);
+            decodedJwt.ifPresent(jwt1 -> log.info("Body JWT validation successful!!!"));
+            var wc1UserDetails = getUserDetailsFromJWT(decodedJwt);
+            log.info("UserDetails extracted from JWT [{}]", wc1UserDetails);
+            return new UsernamePasswordAuthenticationToken(wc1UserDetails, decodedJwt.orElse(null), null);
+        } catch (Exception ex) {
+            log.error(ERROR_MSG_PREFIX, ex);
+            throw new InvalidBearerTokenException(ERROR_MSG_PREFIX + ex.getMessage());
+        }
     }
 
     private Wc1UserDetails getUserDetailsFromJWT(Optional<Jwt> decodedJwt) {

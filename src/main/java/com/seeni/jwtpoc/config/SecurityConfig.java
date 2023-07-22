@@ -1,5 +1,6 @@
 package com.seeni.jwtpoc.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +23,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -29,7 +32,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.seeni.jwtpoc.config.RequestBodyReadFilter.ACCESS_TOKEN;
@@ -47,6 +52,7 @@ public class SecurityConfig {
     private final JwtConfigProperties jwtConfigProperties;
     private final RequestBodyReadFilter requestBodyReadFilter;
     private final CustomJwtAuthenticationConverter customJwtAuthenticationConverter;
+    private final ObjectMapper objectMapper;
 
     @Bean
     InMemoryUserDetailsManager users() {
@@ -61,10 +67,10 @@ public class SecurityConfig {
     @Order(2)
     @Bean
     SecurityFilterChain formAuthenticationFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .authorizeRequests()
                 .antMatchers(GET, "/login").permitAll()
+                .antMatchers(POST, "/error").permitAll()
                 .antMatchers("/form/**").authenticated()
                 .anyRequest().authenticated().and()
                 .cors().and()
@@ -75,7 +81,6 @@ public class SecurityConfig {
     @Order(1)
     @Bean
     SecurityFilterChain basicAuthAuthenticationFilterChain(HttpSecurity http) throws Exception {
-
         http.requestMatchers()
                 .antMatchers("/basic/auth/**")
                 .and()
@@ -89,7 +94,6 @@ public class SecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Bean
     SecurityFilterChain jwtAuthenticationFilterChain(HttpSecurity http) throws Exception {
-
         http.requestMatchers()
                 .antMatchers("/jwt/**", "/jwks/**")
                 .and()
@@ -105,9 +109,8 @@ public class SecurityConfig {
                 .addFilterBefore(requestBodyReadFilter, UsernamePasswordAuthenticationFilter.class) // Needed to extract jwt token from body
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .bearerTokenResolver(request -> (String) request.getAttribute(ACCESS_TOKEN)) // only needed if jwt is not in the header
-                        .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(customJwtAuthenticationConverter)
-                        ));
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(customJwtAuthenticationConverter))
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint));
         return http.build();
     }
 
@@ -148,4 +151,16 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+    AuthenticationEntryPoint jwtAuthenticationEntryPoint = (request, response, exception) -> {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        var errorMap = Map.of(
+                "timestamp", Calendar.getInstance().getTime(),
+                "exception", exception.getMessage(),
+                "status", response.getStatus(),
+                "path", request.getRequestURL().toString());
+        var outputStream = response.getOutputStream();
+        objectMapper.writeValue(outputStream, errorMap);
+        outputStream.flush();
+    };
 }
